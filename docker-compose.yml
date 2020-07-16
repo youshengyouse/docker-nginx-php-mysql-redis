@@ -15,7 +15,7 @@ services:
       - "443:443"                                    # https 端口
     volumes:
       - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/999-tutorials                # 将tutorials目录映射到容器中顶级目录下/999
+      - $DIR_TUTORIALS:/999-tutorials                # 将tutorials目录映射到容器中顶级目录下/999-tutorials 
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
@@ -67,7 +67,7 @@ services:
       TZ: "$TZ"
       IN_DOCKER: 'yousheng'
     restart: always
-    working_dir: /999/
+    working_dir: /999-tutorials/
     cap_add:
       - SYS_PTRACE
     networks:
