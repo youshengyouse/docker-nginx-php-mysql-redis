@@ -15,8 +15,7 @@ services:
       - "443:443"                                    # https 端口
     volumes:
       - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/999                          # 将tutorials目录映射到容器中顶级目录下/999
-      - $DIR_PACKAGES:/000                           # 将packages 目录映射到容器中顶级目录下/000      
+      - $DIR_TUTORIALS:/999-tutorials                # 将tutorials目录映射到容器中顶级目录下/999
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
@@ -53,8 +52,8 @@ services:
 
     volumes:
       - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/999                          # 将tutorials目录映射到容器中顶级目录下/999
-      - $DIR_PACKAGES:/000                           # 将packages 目录映射到容器中顶级目录下/000  
+      - $DIR_TUTORIALS:/999-tutorials                # 将 教程目录   映射到容器中顶级目录下/999-tutorials 
+      - $DIR_PACKAGES:/000-packages-private          # 将 私有包目录 映射到容器中顶级目录下/000-packages-private 
       - ./logs/php:/var/log/php
       - ./data/composer:/tmp/composer
       - ./root:/root:rw
