@@ -1,0 +1,140 @@
+version: "3"
+services:
+  #============================================================================a1_nginx
+  a1:
+    container_name: b1
+    build:
+      context: ./services/nginx
+      args:
+        NGINX_VERSION: 1.15.7-alpine                 # 可以指定其它版本
+        CONTAINER_PACKAGE_URL: mirrors.aliyun.com    # 指定镜像为国内
+        TZ: "$TZ"                                    # 时区
+        NGINX_INSTALL_APPS:
+    ports:
+      - "80:80"                                      # http 端口
+      - "443:443"                                    # https 端口
+    volumes:
+      - ./www-test:/www-test:rw                      # 只做测试用
+      - $DIR_TUTORIALS:/999                          # 将tutorials目录映射到容器中顶级目录下/999
+      - $DIR_PACKAGES:/000                           # 将packages 目录映射到容器中顶级目录下/000      
+      - ./logs/nginx:/var/log/nginx/:rw
+      - ./services/nginx/ssl:/ssl:rw
+      - ./root:/root:rw
+      - ./services/nginx/conf/all_websites:/etc/nginx/all_websites:ro        # 5个配置文件拷贝，注意默认安装时nginx的配置目录是 /etc/nginx
+      - ./services/nginx/conf/fastcgi_params:/etc/nginx/fastcgi_params:ro
+      - ./services/nginx/conf/fastcgi-php.conf:/etc/nginx/fastcgi-php.conf:ro
+      - ./services/nginx/conf/mime.types:/etc/nginx/mime.types:ro
+      - ./services/nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - "common_volume1:/hunan"
+    environment:
+      TZ: "$TZ"
+    restart: always
+    networks:
+      chuse:
+        ipv4_address: $IP_A1                                            # 不能为172.21.0.1，它是网关，否则报错 ERROR: for a1  Cannot start service a1: Address already in use
+  #============================================================================a2_php
+  a2:
+    container_name: b2
+    build:
+      context: ./services/php
+      args:
+        PHP_VERSION: ${PHP_VERSION_74}
+        CONTAINER_PACKAGE_URL: mirrors.aliyun.com
+        PHP_EXTENSIONS: pdo_mysql,mysqli,mbstring,gd,curl,opcache,zip,intl  # 指定安装的php扩展
+        TZ: "$TZ"
+    expose:
+      - 9501
+      - 8000
+    ports:
+      - "8000:8000"  
+    extra_hosts:
+      - "www.site1.com:172.17.0.1"
+      - "adlightbox.bendi:172.21.0.8"                                       # 支持容器间域名访问，这个比较重要，在file_get_content,curl时会用到
+
+    volumes:
+      - ./www-test:/www-test:rw                      # 只做测试用
+      - $DIR_TUTORIALS:/999                          # 将tutorials目录映射到容器中顶级目录下/999
+      - $DIR_PACKAGES:/000                           # 将packages 目录映射到容器中顶级目录下/000  
+      - ./logs/php:/var/log/php
+      - ./data/composer:/tmp/composer
+      - ./root:/root:rw
+      - ./tmp:/tmp:rw
+      # 3个配置文件
+      - ./services/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./services/php/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf:rw
+      - ./services/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf:ro
+      - "common_volume1:/hunan"
+    environment:
+      TZ: "$TZ"
+      IN_DOCKER: 'yousheng'
+    restart: always
+    working_dir: /999/
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      chuse:
+        ipv4_address: $IP_A2
+  #============================================================================= a3: mysql
+  a3:
+    container_name: b3
+    image: mysql:5.7.28
+
+    ports:
+      - "3305:3306"
+    volumes:
+      - ./services/mysql5/mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+      - ./data/mysql5:/var/lib/mysql/:rw
+    restart: always
+    networks:
+      chuse:
+        ipv4_address: $IP_A3
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL5_ROOT_PASSWORD
+      TZ: "$TZ"
+  #============================================================================= a4: phpmyadmin
+  a4:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: b4
+    ports:
+      - "8081:80"
+    volumes:
+      - ./services/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro
+      - ./services/phpmyadmin/php-phpmyadmin.ini:/usr/local/etc/php/conf.d/php-phpmyadmin.ini:ro
+      - ./tmp:/sessions:rw
+
+    networks:
+      chuse:
+        ipv4_address: $IP_A4
+    environment:
+      #- PMA_HOST=mysql
+      - PMA_HOST=a3
+      - PMA_PORT=3306
+      - TZ=$TZ
+  #============================================================================= a5: redis
+  ##----切记，修改dnmp\services\redis\redis.conf中的端口和密码，否则会易黑客入侵，我曾中招挖矿病毒-----##
+  ## 搜索 requirepass 和 post 
+  a5:
+    image: redis:5.0.3-alpine
+    container_name: b5
+    ports:
+      - "${REDIS_HOST_PORT}:${REDIS_HOST_PORT}"            # 将端口6379改为 9763或其它端口 增加安全性
+    volumes:
+      - ./services/redis/redis.conf:/etc/redis.conf:ro
+      - ./data/redis:/data/:rw
+      - ./logs/redis:/usr/local/redis/log/:rw
+    restart: always
+    entrypoint: ["redis-server", "/etc/redis.conf"]
+    environment:
+      TZ: "$TZ"
+    networks:
+      chuse:
+        ipv4_address: $IP_A5
+
+networks:
+  chuse:
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  common_volume1:
