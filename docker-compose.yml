@@ -54,8 +54,8 @@ services:
 
     volumes:
       - ./www-test:/www-test:rw                  # 只做测试用
-      - $DIR_TUTORIALS:/tutorials                # 将 教程目录   映射到容器中顶级目录下/999-tutorials 
-      - $DIR_PACKAGES:/packages-private          # 将 私有包目录 映射到容器中顶级目录下/000-packages-private 
+      - $DIR_TUTORIALS:/tutorials                # 将 教程目录   映射到容器中顶级目录下/tutorials 
+      - $DIR_PACKAGES:/packages-private          # 将 私有包目录 映射到容器中顶级目录下/packages-private 
       #- ../demos:/demos
       #- ../study:/study 
       - ./logs/php:/var/log/php
@@ -71,7 +71,7 @@ services:
       TZ: "$TZ"
       IN_DOCKER: 'yousheng'
     restart: always
-    working_dir: /999-tutorials/
+    # working_dir: /tutorials/
     cap_add:
       - SYS_PTRACE
     networks:
