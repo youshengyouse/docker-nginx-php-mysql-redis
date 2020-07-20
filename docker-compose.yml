@@ -15,7 +15,9 @@ services:
       - "443:443"                                    # https 端口
     volumes:
       - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/999-tutorials                # 将tutorials目录映射到容器中顶级目录下/999-tutorials 
+      - $DIR_TUTORIALS:/tutorials                    # 将tutorials目录映射到容器中顶级目录下/tutorials
+      #- ../demos:/demos
+      #- ../study:/study 
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
@@ -51,9 +53,11 @@ services:
       - "adlightbox.bendi:172.21.0.8"                                       # 支持容器间域名访问，这个比较重要，在file_get_content,curl时会用到
 
     volumes:
-      - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/999-tutorials                # 将 教程目录   映射到容器中顶级目录下/999-tutorials 
-      - $DIR_PACKAGES:/000-packages-private          # 将 私有包目录 映射到容器中顶级目录下/000-packages-private 
+      - ./www-test:/www-test:rw                  # 只做测试用
+      - $DIR_TUTORIALS:/tutorials                # 将 教程目录   映射到容器中顶级目录下/999-tutorials 
+      - $DIR_PACKAGES:/packages-private          # 将 私有包目录 映射到容器中顶级目录下/000-packages-private 
+      #- ../demos:/demos
+      #- ../study:/study 
       - ./logs/php:/var/log/php
       - ./data/composer:/tmp/composer
       - ./root:/root:rw

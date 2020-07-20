@@ -28,10 +28,59 @@ requirepass 新密码
 - 如果php代码中使用curl,file_get_contents等命令读取url内容时，得设置一个extra_hosts
 
 ### 5. 修改或增加映射目录
-默认是将tutorials映射到/999，将packages映射到/000，用户可以根据情况映射目录
+默认已有映射为
+
+- tutorials映射到/999-tutorials
+- packages映射到/000-packages-private
+
+用户可以根据情况映射目录
 
 ### 6. 修改nginx配置
-可以根据实际情况进行虚拟主机的配置
+可以根据实际情况进行虚拟主机的配置，建议`services/nginx/conf/all_websites`下新建一个文件，然后在`nginx.conf`中导入,如
+
+```nginx
+# 网站不多时，放在一个文件里
+include all_websites/localhost.conf; 
+include all_websites/tutorial.conf;
+include all_websites/study.conf; # 这是加上的，也可以使用通配置符导入多个配置文件
+
+# 网站多时，分开管理，尽量文件名与主机名一致
+# include all_websites/*.conf;
+```
+
+如`study.conf`，这是一个简单的例子，只做参考
+
+```nginx
+server {
+    listen       80;   
+    server_name ~^(?<SITE>[\w-]+).study$;
+    set $root /study/$SITE/public;
+    root $root;
+    if ($time_iso8601 ~ "^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})") {}
+    access_log /var/log/nginx/study__${SITE}____$year-$month-${day}____access.log;  
+    error_log /var/log/nginx/study____error.log;
+    index  index.php index.html index.htm;  
+    location ~ \.php$ {
+        fastcgi_pass   _php;
+        include        fastcgi-php.conf;
+        include        fastcgi_params;     
+    }
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+        index index.php index.html;
+    }
+}
+```
+
+在 `C:\Windows\System32\drivers\etc\HOSTS`中添加
+
+```ini
+# 这只是例子，请根据自己的情况写
+127.0.0.1 jigsaw.study
+127.0.0.1 tailwind.study
+```
+
+
 
 ### 7. 别名定义
 将一些常用的命令定义成alias，提高工作效率
@@ -180,3 +229,8 @@ error during connect: Get http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.40/containers
 ```
 
 表示`docker desktop`没有正常启动，请重新启动
+
+```bash
+ERROR: Pool overlaps with other one on this address space
+```
+原因是已有一个网络占用了subnet网段地址，`docker network ls`，查看，删除除了 `bridge`，`host `，`none`之外的网络
