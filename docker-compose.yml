@@ -71,7 +71,7 @@ services:
       TZ: "$TZ"
       IN_DOCKER: 'yousheng'
     restart: always
-    # working_dir: /tutorials/
+    working_dir: /www/
     cap_add:
       - SYS_PTRACE
     networks:

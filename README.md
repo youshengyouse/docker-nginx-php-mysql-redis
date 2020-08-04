@@ -145,7 +145,7 @@ function _b1{
 
 function _b2{
   cd $dockerPath
-  docker exec -it b2 sh
+  docker exec -it b2 bash
 }
 
 function _b3{
