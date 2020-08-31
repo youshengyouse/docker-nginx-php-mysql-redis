@@ -1,6 +1,46 @@
+# 1. 修改mysql中的root密码
+# 2. 修改redis密码
+# 3. 增加相应的映射目录
+
 version: "3"
 services:
-  #============================================================================a1_nginx
+  #============================================================================a0_nginx_编译安装_支持echo,支持视频截图
+  a0:
+    container_name: b0
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile_video
+      args:
+        NGINX_VERSION: 1.15.7-alpine
+        CONTAINER_PACKAGE_URL: mirrors.aliyun.com
+        TZ: "$TZ"
+        NGINX_INSTALL_APPS:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./www-test:/www-test:rw                      # 只做测试用
+      #- ../../server:/www/server
+      #- ../../common:/www/common
+      - ./logs/nginx:/var/log/nginx/:rw
+      - ./services/nginx/ssl:/ssl:rw
+      - ./root:/root:rw
+      # 自定义安装的nginx配置文件位置在/usr/local/nginx/conf目录下
+      - ./services/nginx/conf/all_websites:/usr/local/nginx/conf/all_websites:ro  
+      - ./services/nginx/conf/fastcgi_params:/usr/local/nginx/conf/fastcgi_params:ro
+      - ./services/nginx/conf/fastcgi-php.conf:/usr/local/nginx/conf/fastcgi-php.conf:ro
+      - ./services/nginx/conf/mime.types:/usr/local/nginx/conf/mime.types:ro
+      - ./services/nginx/conf/nginx-hk.conf:/usr/local/nginx/conf/nginx.conf:ro
+      - "common_volume1:/hunan"
+    environment:
+      TZ: "$TZ"
+      NGINX_TYPE: "CUSTOM"
+    restart: always
+    networks:
+      chuse:
+        ipv4_address: $IP_A1      # 不能为172.21.0.1，它是网关，否则报错 ERROR: for a1  Cannot start service a1: Address already in use
+
+  #============================================================================a1_nginx，与a0_nginx 二选一
   a1:
     container_name: b1
     build:
@@ -15,9 +55,8 @@ services:
       - "443:443"                                    # https 端口
     volumes:
       - ./www-test:/www-test:rw                      # 只做测试用
-      - $DIR_TUTORIALS:/www/tutorials                    # 将tutorials目录映射到容器中顶级目录下/tutorials
-      #- ../demos:/www/demos
-      #- ../study:/www/study 
+      #- ../../server:/www/server
+      #- ../../common:/www/common
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
@@ -29,10 +68,11 @@ services:
       - "common_volume1:/hunan"
     environment:
       TZ: "$TZ"
+      NGINX_TYPE: "STANDARD"
     restart: always
     networks:
       chuse:
-        ipv4_address: $IP_A1                                            # 不能为172.21.0.1，它是网关，否则报错 ERROR: for a1  Cannot start service a1: Address already in use
+        ipv4_address: $IP_A1           # 不能为172.21.0.1，它是网关，否则报错 ERROR: for a1  Cannot start service a1: Address already in use
   #============================================================================a2_php
   a2:
     container_name: b2
@@ -49,13 +89,10 @@ services:
     ports:
       - "8000:8000"  
     extra_hosts:
-      - "www.site1.com:172.17.0.1"
-      - "adlightbox.bendi:172.21.0.8"                                       # 支持容器间域名访问，这个比较重要，在file_get_content,curl时会用到
+      - "baidu.com:${IP_A2}"          # 支持容器间域名访问，这个比较重要，在file_get_content,curl时会用到
 
     volumes:
-      - ./www-test:/www-test:rw                  # 只做测试用
-      - $DIR_TUTORIALS:/www/tutorials                # 将 教程目录   映射到容器中顶级目录下/tutorials 
-      - $DIR_PACKAGES:/www/packages-private          # 将 私有包目录 映射到容器中顶级目录下/packages-private 
+      - ./www-test:/www-test:rw                # 只做测试用
       #- ../demos:/www/demos
       #- ../study:/www/study 
       - ./logs/php:/var/log/php
