@@ -27,7 +27,8 @@ services:
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
       # 自定义安装的nginx配置文件位置在/usr/local/nginx/conf目录下
-      - ./services/nginx/conf/all_websites:/usr/local/nginx/conf/all_websites:ro  
+      - ./services/nginx/conf/all_websites_standard:/usr/local/nginx/conf/all_websites_standard:ro
+      - ./services/nginx/conf/all_websites_custom:/usr/local/nginx/conf/all_websites_custom:ro   
       - ./services/nginx/conf/fastcgi_params:/usr/local/nginx/conf/fastcgi_params:ro
       - ./services/nginx/conf/fastcgi-php.conf:/usr/local/nginx/conf/fastcgi-php.conf:ro
       - ./services/nginx/conf/mime.types:/usr/local/nginx/conf/mime.types:ro
@@ -61,7 +62,9 @@ services:
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
-      - ./services/nginx/conf/all_websites:/etc/nginx/all_websites:ro        # 5个配置文件拷贝，注意默认安装时nginx的配置目录是 /etc/nginx
+      - ./services/nginx/conf/all_websites:/etc/nginx/all_websites:ro        
+      - ./services/nginx/conf/all_websites_standard:/usr/local/nginx/conf/all_websites_standard:ro
+      - ./services/nginx/conf/all_websites_custom:/usr/local/nginx/conf/all_websites_custom:ro  
       - ./services/nginx/conf/fastcgi_params:/etc/nginx/fastcgi_params:ro
       - ./services/nginx/conf/fastcgi-php.conf:/etc/nginx/fastcgi-php.conf:ro
       - ./services/nginx/conf/mime.types:/etc/nginx/mime.types:ro
