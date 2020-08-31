@@ -62,9 +62,8 @@ services:
       - ./logs/nginx:/var/log/nginx/:rw
       - ./services/nginx/ssl:/ssl:rw
       - ./root:/root:rw
-      - ./services/nginx/conf/all_websites:/etc/nginx/all_websites:ro        
-      - ./services/nginx/conf/all_websites_standard:/usr/local/nginx/conf/all_websites_standard:ro
-      - ./services/nginx/conf/all_websites_custom:/usr/local/nginx/conf/all_websites_custom:ro  
+      - ./services/nginx/conf/all_websites_standard:/etc/nginx/conf/all_websites_standard:ro
+      - ./services/nginx/conf/all_websites_custom:/etc/nginx/conf/all_websites_custom:ro  
       - ./services/nginx/conf/fastcgi_params:/etc/nginx/fastcgi_params:ro
       - ./services/nginx/conf/fastcgi-php.conf:/etc/nginx/fastcgi-php.conf:ro
       - ./services/nginx/conf/mime.types:/etc/nginx/mime.types:ro
